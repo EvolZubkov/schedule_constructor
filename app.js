@@ -28,6 +28,104 @@ const applyJsonBtn = document.getElementById("applyJsonBtn");
 const downloadBtn = document.getElementById("downloadBtn");
 const countTag = document.getElementById("countTag");
 const jsonStatus = document.getElementById("jsonStatus");
+function highlightJsonError(error, textarea) {
+  const text = textarea.value;
+  const msg = (error && error.message) || "";
+  let index = null;
+
+  // Пытаемся вытащить "position 399" из текста ошибки
+  const m = msg.match(/position\s+(\d+)/i);
+  if (m) {
+    index = parseInt(m[1], 10);
+  }
+
+  let line = 1;
+  let col = 1;
+  let lineText = "";
+  let hint = "";
+
+  if (index != null && !Number.isNaN(index) && index >= 0 && index <= text.length) {
+    // считаем строку/столбец
+    for (let i = 0; i < index; i++) {
+      if (text[i] === "\n") {
+        line++;
+        col = 1;
+      } else {
+        col++;
+      }
+    }
+
+    // ищем границы строки
+    let lineStart = index;
+    while (lineStart > 0 && text[lineStart - 1] !== "\n") {
+      lineStart--;
+    }
+    let lineEnd = index;
+    while (lineEnd < text.length && text[lineEnd] !== "\n") {
+      lineEnd++;
+    }
+    lineText = text.slice(lineStart, lineEnd);
+
+    // выделяем проблемный символ
+    textarea.focus();
+    textarea.setSelectionRange(index, Math.min(index + 1, text.length));
+
+    // чуть-чуть скроллим к нужной строке
+    const before = text.slice(0, index);
+    const linesBefore = before.split("\n").length;
+    const approxLineHeight = 16;
+    textarea.scrollTop = (linesBefore - 3) * approxLineHeight;
+
+    // --- ХЕВРИСТИКИ ПОДСКАЗКИ ---
+
+    const trimmedLine = lineText.trim();
+    const charAtPos = text[index];
+
+    if (/Unexpected end of JSON input/i.test(msg)) {
+      hint = "Обычно это значит, что где-то выше не хватает закрывающей скобки '}' или ']'. Посчитай пары скобок.";
+    } else if (/Expected ',' or '}/i.test(msg) || /Expected ',' or ']/i.test(msg)) {
+      hint = "Чаще всего тут не хватает запятой в конце предыдущей строки перед этим блоком.";
+    } else if (/Unexpected string/i.test(msg) || /Unexpected number/i.test(msg)) {
+      hint = "Обычно это означает, что перед этим значением пропущена запятая.";
+    } else if (/Unexpected token/i.test(msg) && (charAtPos === '}' || charAtPos === ']')) {
+      hint = "Часто это лишняя запятая перед закрывающей скобкой '}' или ']'. Проверь строку выше.";
+    } else if (/Unexpected token/i.test(msg) && trimmedLine.startsWith('"')) {
+      hint = "Возможно, перед этим полем пропущена запятая.";
+    } else {
+      hint = "Посмотри внимательно на эту строку и строку выше: скорее всего проблема с запятой или скобкой.";
+    }
+  } else {
+    // позицию не смогли найти – даём хотя бы общий текст
+    line = null;
+    col = null;
+    hint = "Посмотри на конец файла: часто ошибка там — не хватает скобки или запятой.";
+  }
+
+  // Подготовим человекочитаемое сообщение
+  let humanMsg = "Ошибка парсинга итогового JSON";
+  if (msg) humanMsg += ": " + msg;
+  if (line != null) {
+    humanMsg += ` (строка ${line}, столбец ${col})`;
+  }
+
+  // Рисуем строку с указателем
+  let pointerLine = "";
+  if (lineText) {
+    const relativeCol = Math.max(1, col - (text.slice(0, index).lastIndexOf("\n") + 1));
+    pointerLine = " ".repeat(relativeCol - 1) + "^";
+    humanMsg += `\n\nСтрока ${line}:\n${lineText}\n${pointerLine}`;
+  }
+
+  if (hint) {
+    humanMsg += `\n\nПодсказка: ${hint}`;
+  }
+
+  jsonStatus.textContent = humanMsg;
+  jsonStatus.style.color = "#e74c3c";
+
+  alert(humanMsg);
+}
+
 
 // --- УТИЛИТЫ JSON ---
 function parseJsonOrAlert(text, fieldName, expectedType) {
@@ -117,22 +215,26 @@ tasksJsonEditor.addEventListener("input", () => {
 
 applyJsonBtn.addEventListener("click", () => {
   try {
-    const parsed = JSON.parse(tasksJsonEditor.value);
+    const text = tasksJsonEditor.value;
+    const parsed = JSON.parse(text);
+
     if (!Array.isArray(parsed)) {
-      alert("Корневой JSON должен быть массивом ( [ ... ] )");
-      jsonStatus.textContent = "Ошибка: корень не массив";
+      jsonStatus.textContent = "Ошибка: корневой JSON должен быть массивом [ ... ]";
       jsonStatus.style.color = "#e74c3c";
+      alert("Корневой JSON должен быть массивом ( [ ... ] )");
       return;
     }
+
+    // если всё ок – заменяем tasks и обновляем
     tasks.length = 0;
     parsed.forEach(obj => tasks.push(obj));
     refreshTasksOutput();
   } catch (e) {
-    alert("Ошибка парсинга итогового JSON:\n" + e.message);
-    jsonStatus.textContent = "Ошибка JSON";
-    jsonStatus.style.color = "#e74c3c";
+    // Здесь вместо простого alert — подсветка места ошибки
+    highlightJsonError(e, tasksJsonEditor);
   }
 });
+
 
 // --- QUERY BUILDER ---
 function createQueryRow(fieldValue = "", valueValue = "") {
