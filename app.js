@@ -571,6 +571,16 @@ const ACTION_DEFS = {
       { name: "thumbnail", label: "thumbnail", type: "json", required: false }
     ]
   },
+  "sendGradeRequest": {
+    label:"sendGradeRequest – отправить пользователю запрос на оценку / анкету обратной связи",
+    fields: [
+      { name: "text", type: "string", required: true },   // текст приглашения
+      { name: "code", type: "string", required: true },   // код анкеты / опроса
+      { name: "inline", type: "boolean", required: false },
+      { name: "withIcons", type: "boolean", required: false },
+      { name: "useLabels", type: "boolean", required: false }
+    ]
+  },
   "sendMessage": {
     label: "sendMessage – отправка текстового сообщения пользователю/в чат.",
     fields: [
@@ -769,6 +779,7 @@ const ACTION_MAIN_FIELDS = {
   doDialog: ["dialog"],                 // ключ диалога
   setDelay: ["chat_action", "delay"],   // оба логически важны
   sendMediaGroup: ["media"],            // если такой метод есть в твоём ACTION_DEFS
+  sendGradeRequest: ["text", "code"],           
 
   setUserState: ["state"],
   setUserSubstate: ["substate"],
@@ -984,7 +995,14 @@ const ACTION_PLACEHOLDER_HINTS = {
   "shufflePeers.count_links": "Сколько пиров назначать каждому пользователю",
   "shufflePeers.link_name_prefix": "Префикс для ссылки на ревьюера, напр. reviewer_",
   "shufflePeers.backward_link_name_prefix": "Префикс для обратной ссылки, напр. user_",
-  "shufflePeers.need_backward_links": "Нужны ли обратные ссылки (true/false)"
+  "shufflePeers.need_backward_links": "Нужны ли обратные ссылки (true/false)",
+  
+  // --- sendGradeRequest ---
+  "sendGradeRequest.text": "Текст сообщения с просьбой оценить вебинар / лекцию",
+  "sendGradeRequest.code": "Код анкеты/опроса, напр. GRADE_WEBINAR_141125",
+  "sendGradeRequest.inline": "Показывать кнопки оценки прямо под сообщением (true/false)",
+  "sendGradeRequest.withIcons": "Показывать иконки (звёзды/эмодзи) у вариантов оценки",
+  "sendGradeRequest.useLabels": "Использовать текстовые подписи для вариантов оценки"
 };
 
 
