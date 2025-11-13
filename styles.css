@@ -1,0 +1,256 @@
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  background: #f5f5f5;
+}
+
+* {
+  box-sizing: inherit;
+}
+
+header {
+  padding: 12px 20px;
+  background: #222;
+  color: #fff;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 20px;
+}
+
+header p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+.container {
+  display: flex;
+  gap: 16px;
+  padding: 16px;
+  height: calc(100vh - 60px);
+}
+
+.panel {
+  background: #fff;
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 0 0 1px #ddd;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+}
+
+.panel-left {
+  flex: 0 0 480px;
+  overflow: auto;
+}
+
+.panel-right {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+label {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+input[type="text"],
+input[type="datetime-local"],
+select,
+textarea {
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 13px;
+  font-family: inherit;
+  resize: vertical;
+}
+
+textarea {
+  min-height: 70px;
+}
+
+.small-hint {
+  font-size: 11px;
+  color: #666;
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.buttons-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+button {
+  border: none;
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+button.primary {
+  background: #007bff;
+  color: #fff;
+}
+
+button.secondary {
+  background: #eee;
+}
+
+button.danger {
+  background: #e74c3c;
+  color: #fff;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.sub-block-title {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.section-box {
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  padding: 8px;
+  background: #fafafa;
+}
+
+.kv-row {
+  display: grid;
+  grid-template-columns: 1.1fr 1.3fr auto;
+  gap: 4px;
+  margin-bottom: 4px;
+  align-items: center;
+}
+
+.kv-row input,
+.kv-row select {
+  font-size: 12px;
+  padding: 4px 6px;
+}
+
+.small-btn {
+  padding: 3px 6px;
+  font-size: 11px;
+  border-radius: 4px;
+  background: #eee;
+  border: none;
+  cursor: pointer;
+}
+
+.small-btn:hover {
+  background: #ddd;
+}
+
+pre {
+  margin: 0;
+  padding: 8px;
+  background: #111;
+  color: #e5e5e5;
+  border-radius: 4px;
+  font-size: 12px;
+  overflow: auto;
+}
+
+.inline-hint {
+  font-size: 11px;
+  color: #666;
+  margin-top: -2px;
+  margin-bottom: 4px;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  padding: 2px 8px;
+  font-size: 11px;
+  border-radius: 999px;
+  background: #eee;
+}
+
+#tasksJsonEditor {
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 0;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+  font-size: 12px;
+  background: #111;
+  color: #e5e5e5;
+  border-radius: 4px;
+  padding: 8px;
+  border: 1px solid #333;
+  resize: none;
+}
+
+.output-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.right-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 6px;
+  gap: 8px;
+}
+
+#jsonStatus {
+  font-size: 11px;
+}
+
+.preview-title {
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 6px;
+  margin-bottom: 2px;
+}
+.optional-wrapper {
+  margin-top: 8px;
+}
+
+.optional-toggle {
+  margin-bottom: 4px;
+}
+
+.optional-fields {
+  border-top: 1px dashed #ddd;
+  padding-top: 4px;
+  margin-top: 4px;
+}
+
+.optional-fields.hidden {
+  display: none;
+}
