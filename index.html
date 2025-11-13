@@ -7,120 +7,162 @@
 </head>
 <body>
 <header>
-  <h1>Конструктор тасок бота</h1>
-  <p>Собирает блоки с query + actions в общий JSON-массив, с предпросмотром и ручным редактированием.</p>
+  <div class="header-inner">
+    <div>
+      <h1>Конструктор тасок бота</h1>
+      <p>Собирай блоки с <code>query</code> и <code>actions</code> в общий JSON-массив с предпросмотром и валидацией.</p>
+    </div>
+    <div class="header-badge">
+      <span>JSON builder</span>
+    </div>
+  </div>
 </header>
 
 <div class="container">
   <!-- ЛЕВАЯ ПАНЕЛЬ: НАСТРОЙКА ОДНОГО БЛОКА -->
   <div class="panel panel-left">
-    <!-- ОБЩИЕ ПОЛЯ БЛОКА -->
-    <div class="field">
-      <label for="description">Description</label>
-      <input type="text" id="description" placeholder="Например: Открытие сессии приемки ДЗ №1" />
-    </div>
-
-    <div class="field">
-      <label for="scheduleDatetime">schedule_datetime</label>
-      <input type="datetime-local" id="scheduleDatetime" />
-      <div class="small-hint">
-        Здесь ты выбираешь <b>локальную дату и время</b> через календарь.
-        В JSON это сохранится как ISO-время с суффиксом <code>Z</code> (UTC), например:
-        <code>2025-11-13T13:35:00.000Z</code>.<br/>
-        Если твоему боту нужен формат <code>+03:00</code>, то в итоговом JSON (справа)
-        можно заменить <code>Z</code> на <code>+03:00</code> или переписать дату
-        в виде <code>2025-11-13T16:35:00.000+03:00</code>.
-      </div>
-    </div>
-
-    <div class="field">
-      <label for="datetime">datetime (опционально)</label>
-      <input type="datetime-local" id="datetime" />
-      <div class="small-hint">
-        Работает так же, как <code>schedule_datetime</code>:
-        ты выбираешь дату и время, а в JSON попадёт ISO-строка вида
-        <code>2025-11-13T13:40:00.000Z</code>.<br/>
-        При необходимости можно вручную поправить на время с нужным смещением,
-        напр.: <code>2025-11-13T16:40:00.000+03:00</code>.
-      </div>
-    </div>
-
-    <div class="field">
-      <label>Флаги</label>
-      <div class="checkbox-row">
-        <input type="checkbox" id="isActive" />
-        <label for="isActive" style="font-weight:400;">is_active: true</label>
-      </div>
-      <div class="small-hint">
-        Если галочка снята — поле <code>is_active</code> не добавляется.
-      </div>
-    </div>
-
-    <!-- QUERY BUILDER -->
-    <div class="field">
-      <div class="sub-block-title">Query (конструктор)</div>
-      <div class="section-box">
-        <div id="queryRows"></div>
-        <button type="button" class="secondary small-btn" id="addQueryRowBtn">+ Добавить условие</button>
-        <div class="small-hint" style="margin-top:6px;">
-          Примеры:
-          <ul style="margin:4px 0 0 16px;padding:0;font-size:11px;">
-            <li>поле: <code>state</code>, значение: <code>ACTIVE</code></li>
-            <li>поле: <code>_id.$in</code>, значение: <code>[912831921, 8513762658]</code></li>
-            <li>поле: <code>$or</code>, значение: <code>[{ "cache.homework1_file1": { "$exists": false } }]</code></li>
-          </ul>
-          Значение можно писать как JSON (<code>[...]</code>, <code>{"a":1}</code>, <code>true</code>, <code>123</code>)
-          или просто строку (<code>ACTIVE</code> без кавычек).
+    <!-- СЕКЦИЯ: ОБЩЕЕ -->
+    <div class="section-collapsible">
+      <div class="section-header" data-toggle="section">
+        <div class="section-header-main">
+          <span class="section-title">Основные настройки блока</span>
+          <span class="section-subtitle">Описание, время, флаги</span>
         </div>
-        <div class="preview-title">Текущий query:</div>
-        <pre id="currentQueryPreview">{}</pre>
+        <span class="section-header-status">Свернуть</span>
       </div>
-    </div>
-
-    <!-- ACTIONS BUILDER -->
-    <div class="field">
-      <div class="sub-block-title">Actions (конструктор)</div>
-      <div class="section-box">
+      <div class="section-body" id="mainSectionBody">
         <div class="field">
-          <label for="actionType">Тип action</label>
-          <select id="actionType">
-            <!-- Заполняется из JS -->
-          </select>
-        </div>
-        <div id="actionFieldsContainer"></div>
-
-        <div class="inline-hint">
-          Для сложных случаев можно потом поправить JSON руками в правой панели.
+          <label for="description">Description</label>
+          <input type="text" id="description" placeholder="Например: Открытие сессии приемки ДЗ №1" />
         </div>
 
-        <div class="buttons-row">
-          <button type="button" class="secondary" id="addActionBtn">Добавить action в массив</button>
-          <button type="button" class="secondary" id="clearActionsBtn">Очистить actions для этого блока</button>
+        <div class="field">
+          <label for="scheduleDatetime">schedule_datetime</label>
+          <input type="datetime-local" id="scheduleDatetime" />
+          <div class="small-hint">
+            Выбери <b>локальную дату и время</b>. В JSON это сохранится как ISO-время с суффиксом <code>Z</code> (UTC),
+            например: <code>2025-11-13T13:35:00.000Z</code>.<br/>
+            Если системе нужен формат <code>+03:00</code>, потом в итоговом JSON можно заменить <code>Z</code> на
+            <code>+03:00</code> или переписать дату вручную.
+          </div>
         </div>
 
-        <div class="preview-title">Текущий массив actions для блока:</div>
-        <pre id="currentActionsPreview">[]</pre>
+        <div class="field">
+          <label for="datetime">datetime (опционально)</label>
+          <input type="datetime-local" id="datetime" />
+          <div class="small-hint">
+            Аналогично <code>schedule_datetime</code>, но для отдельного логического времени:
+            в JSON попадёт ISO-строка вида <code>2025-11-13T13:40:00.000Z</code>. При необходимости можно
+            вручную поправить на <code>+03:00</code>.
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Флаги</label>
+          <div class="checkbox-row">
+            <input type="checkbox" id="isActive" />
+            <label for="isActive" style="font-weight:400;">is_active: true</label>
+          </div>
+          <div class="small-hint">
+            Если галочка снята — поле <code>is_active</code> в объект не добавляется.
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- EXTRA FIELDS -->
-    <div class="field">
-      <label for="extra">Дополнительные поля блока (JSON, опционально)</label>
-      <textarea id="extra" placeholder='Например:
+    <!-- СЕКЦИЯ: QUERY -->
+    <div class="section-collapsible">
+      <div class="section-header" data-toggle="section">
+        <div class="section-header-main">
+          <span class="section-title">Query (фильтр пользователей)</span>
+          <span class="section-subtitle">Условия выборки для этого блока</span>
+        </div>
+        <span class="section-header-status">Развернуть</span>
+      </div>
+      <div class="section-body collapsed" id="querySectionBody">
+        <div class="section-box">
+          <div id="queryRows"></div>
+          <button type="button" class="secondary small-btn" id="addQueryRowBtn">+ Добавить условие</button>
+          <div class="small-hint" style="margin-top:6px;">
+            Примеры:
+            <ul class="hint-list">
+              <li>поле: <code>state</code>, значение: <code>ACTIVE</code></li>
+              <li>поле: <code>_id.$in</code>, значение: <code>[912831921, 8513762658]</code></li>
+              <li>поле: <code>$or</code>, значение: <code>[{ "cache.homework1_file1": { "$exists": false } }]</code></li>
+            </ul>
+            Значение можно писать как JSON (<code>[...]</code>, <code>{"a":1}</code>, <code>true</code>, <code>123</code>)
+            или просто строку (<code>ACTIVE</code> без кавычек).
+          </div>
+          <div class="preview-title">Текущий query:</div>
+          <pre id="currentQueryPreview">{}</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- СЕКЦИЯ: ACTIONS -->
+    <div class="section-collapsible">
+      <div class="section-header" data-toggle="section">
+        <div class="section-header-main">
+          <span class="section-title">Actions (действия блока)</span>
+          <span class="section-subtitle">Что делать с найденными пользователями</span>
+        </div>
+        <span class="section-header-status">Свернуть</span>
+      </div>
+      <div class="section-body" id="actionsSectionBody">
+        <div class="section-box">
+          <div class="field">
+            <label for="actionType">Тип action</label>
+            <select id="actionType">
+              <!-- Заполняется из JS -->
+            </select>
+            <div class="small-hint">
+              Выбери действие (sendMessage, setDelay, doDialog, ...), потом заполни обязательные поля.
+              Остальные можно раскрыть в блоке “Дополнительные поля”.
+            </div>
+          </div>
+
+          <div id="actionFieldsContainer"></div>
+
+          <div class="buttons-row">
+            <button type="button" class="primary" id="addActionBtn">Добавить action в массив</button>
+            <button type="button" class="secondary" id="clearActionsBtn">Очистить actions для этого блока</button>
+          </div>
+
+          <div class="preview-title">Текущий массив actions для блока:</div>
+          <pre id="currentActionsPreview">[]</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- СЕКЦИЯ: ДОП. ПОЛЯ -->
+    <div class="section-collapsible">
+      <div class="section-header" data-toggle="section">
+        <div class="section-header-main">
+          <span class="section-title">Дополнительные поля блока</span>
+          <span class="section-subtitle">work_interval, role, links и т.п.</span>
+        </div>
+        <span class="section-header-status">Развернуть</span>
+      </div>
+      <div class="section-body collapsed" id="extraSectionBody">
+        <div class="field">
+          <label for="extra">Дополнительные поля (JSON, опционально)</label>
+          <textarea id="extra" placeholder='Например:
 {
   "work_interval": {
     "from": "00:00",
     "to": "23:59"
   }
 }'></textarea>
-      <div class="small-hint">
-        Содержимое будет слито в корень объекта таски вместе с <code>description</code>, <code>query</code>, <code>actions</code>.
-        Используй для <code>work_interval</code>, <code>role</code>, <code>links</code> и т.п.
+          <div class="small-hint">
+            Содержимое будет слито в корень объекта таски вместе с <code>description</code>, <code>query</code>, <code>actions</code>.
+            Используй для <code>work_interval</code>, <code>role</code>, <code>links</code> и любых других полей.
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- КНОПКИ БЛОКА -->
-    <div class="buttons-row">
+    <div class="buttons-row block-buttons">
       <button class="primary" id="addBlockBtn">Добавить блок в итоговый JSON</button>
       <button class="secondary" id="clearBlockFormBtn" type="button">Очистить форму блока</button>
       <button class="danger" id="clearAllBlocksBtn" type="button">Очистить весь итоговый массив</button>
@@ -130,10 +172,13 @@
   <!-- ПРАВАЯ ПАНЕЛЬ: ИТОГОВЫЙ JSON -->
   <div class="panel panel-right">
     <div class="output-header">
-      <span>Итоговый JSON по всем блокам</span>
-      <div style="display:flex;gap:8px;align-items:center;">
+      <div>
+        <div class="output-title">Итоговый JSON по всем блокам</div>
+        <div class="output-subtitle">Можно править руками, потом применить с проверкой.</div>
+      </div>
+      <div class="output-controls">
         <span class="tag" id="countTag">0 объектов</span>
-        <button class="primary" id="downloadBtn" disabled>Скачать JSON</button>
+        <button class="secondary" id="downloadBtn" disabled>Скачать JSON</button>
       </div>
     </div>
 
@@ -141,9 +186,9 @@
 
     <div class="right-footer">
       <div class="buttons-row">
-        <button class="secondary" id="applyJsonBtn">Применить правки из JSON</button>
+        <button class="primary" id="applyJsonBtn">Применить правки из JSON</button>
       </div>
-      <div id="jsonStatus" class="small-hint">OK</div>
+      <div id="jsonStatus" class="status-pill">OK</div>
     </div>
   </div>
 </div>

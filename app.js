@@ -1,6 +1,7 @@
 // --- ГЛОБАЛЬНОЕ СОСТОЯНИЕ ---
 const tasks = [];            // итоговый массив блоков
 let currentActions = [];     // actions для текущего блока
+const STORAGE_KEY = "taskBuilder.tasksJson.v1";
 
 // --- DOM элементы ---
 const descriptionInput = document.getElementById("description");
@@ -188,12 +189,30 @@ function setDeep(obj, path, value) {
 
 // --- ИТОГОВЫЙ JSON справа ---
 function refreshTasksOutput() {
-  tasksJsonEditor.value = JSON.stringify(tasks, null, 2);
-  countTag.textContent = tasks.length + " объект" + (tasks.length === 1 ? "" : "ов");
+  const jsonStr = JSON.stringify(tasks, null, 2);
+
+  // заполняем textarea
+  tasksJsonEditor.value = jsonStr;
+
+  // обновляем счётчик
+  countTag.textContent =
+    tasks.length + " объект" + (tasks.length === 1 ? "" : "ов");
+
+  // состояние кнопки скачивания
   downloadBtn.disabled = tasks.length === 0;
+
+  // статус
   jsonStatus.textContent = "OK (сгенерировано конструктором)";
-  jsonStatus.style.color = "#2ecc71";
+  jsonStatus.style.color = "#22c55e";
+
+  // пробуем сохранить в localStorage
+  try {
+    localStorage.setItem(STORAGE_KEY, jsonStr);
+  } catch (e) {
+    // молча игнорируем, если в приватном режиме или localStorage недоступен
+  }
 }
+
 
 downloadBtn.addEventListener("click", () => {
   const jsonStr = JSON.stringify(tasks, null, 2);
@@ -969,7 +988,7 @@ const ACTION_PLACEHOLDER_HINTS = {
 };
 
 
-function populateActionTypes() {
+function initActionTypeSelect() {
   Object.entries(ACTION_DEFS).forEach(([name, def]) => {
     const opt = document.createElement("option");
     opt.value = name;
@@ -1284,10 +1303,49 @@ clearAllBlocksBtn.addEventListener("click", () => {
   tasks.length = 0;
   refreshTasksOutput();
 });
+function initCollapsibles() {
+  document.querySelectorAll('[data-toggle="section"]').forEach(header => {
+    const body = header.nextElementSibling;
+    const status = header.querySelector(".section-header-status");
+
+    header.addEventListener("click", () => {
+      const willCollapse = !body.classList.contains("collapsed");
+      body.classList.toggle("collapsed", willCollapse);
+      if (status) {
+        status.textContent = willCollapse ? "Развернуть" : "Свернуть";
+      }
+    });
+  });
+}
+function loadTasksFromStorageIfAny() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (!saved) return;
+
+    const parsed = JSON.parse(saved);
+    if (!Array.isArray(parsed)) return;
+
+    tasks.length = 0;
+    parsed.forEach(obj => tasks.push(obj));
+  } catch (e) {
+    // если вдруг что-то не так с JSON — просто игнорим сохранённое
+  }
+}
 
 // --- ИНИЦИАЛИЗАЦИЯ ---
-populateActionTypes();
-renderActionFields();
-createQueryRow();
-refreshQueryPreview();
-refreshTasksOutput();
+// --- ИНИЦИАЛИЗАЦИЯ ---
+window.addEventListener("load", () => {
+  initActionTypeSelect();
+  renderActionFields();
+
+  createQueryRow();
+  refreshQueryPreview();
+
+  // пробуем восстановить задачи из localStorage
+  loadTasksFromStorageIfAny();
+  refreshTasksOutput();
+
+  // включаем аккордеоны
+  initCollapsibles();
+});
+
