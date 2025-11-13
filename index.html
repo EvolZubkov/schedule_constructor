@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Конструктор тасок бота</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      background: #f5f5f5;
+    }
+    * { box-sizing: inherit; }
+
+    header {
+      padding: 12px 20px;
+      background: #222;
+      color: #fff;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 20px;
+    }
+    header p {
+      margin: 4px 0 0;
+      font-size: 13px;
+      opacity: 0.8;
+    }
+
+    .container {
+      display: flex;
+      gap: 16px;
+      padding: 16px;
+      height: calc(100vh - 60px);
+    }
+
+    .panel {
+      background: #fff;
+      border-radius: 8px;
+      padding: 12px;
+      box-shadow: 0 0 0 1px #ddd;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-height: 0;
+    }
+
+    .panel-left {
+      flex: 0 0 480px;
+      overflow: auto;
+    }
+    .panel-right {
+      flex: 1 1 auto;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    label {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    input[type="text"],
+    input[type="datetime-local"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 6px 8px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      font-size: 13px;
+      font-family: inherit;
+      resize: vertical;
+    }
+
+    textarea {
+      min-height: 70px;
+    }
+
+    .small-hint {
+      font-size: 11px;
+      color: #666;
+    }
+
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .buttons-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    button {
+      border: none;
+      border-radius: 4px;
+      padding: 6px 10px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    button.primary { background: #007bff; color: #fff; }
+    button.secondary { background: #eee; }
+    button.danger { background: #e74c3c; color: #fff; }
+    button:disabled { opacity: 0.6; cursor: default; }
+
+    .sub-block-title {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .section-box {
+      border-radius: 6px;
+      border: 1px solid #ddd;
+      padding: 8px;
+      background: #fafafa;
+    }
+
+    .kv-row {
+      display: grid;
+      grid-template-columns: 1.1fr 1.3fr auto;
+      gap: 4px;
+      margin-bottom: 4px;
+      align-items: center;
+    }
+    .kv-row input,
+    .kv-row select {
+      font-size: 12px;
+      padding: 4px 6px;
+    }
+
+    .small-btn {
+      padding: 3px 6px;
+      font-size: 11px;
+      border-radius: 4px;
+      background: #eee;
+      border: none;
+      cursor: pointer;
+    }
+    .small-btn:hover { background: #ddd; }
+
+    pre {
+      margin: 0;
+      padding: 8px;
+      background: #111;
+      color: #e5e5e5;
+      border-radius: 4px;
+      font-size: 12px;
+      overflow: auto;
+    }
+
+    .inline-hint {
+      font-size: 11px;
+      color: #666;
+      margin-top: -2px;
+      margin-bottom: 4px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 20px;
+      padding: 2px 8px;
+      font-size: 11px;
+      border-radius: 999px;
+      background: #eee;
+    }
+
+    #tasksJsonEditor {
+      flex: 1 1 auto;
+      width: 100%;
+      min-height: 0;
+      font-family: "JetBrains Mono", "Fira Code", monospace;
+      font-size: 12px;
+      background: #111;
+      color: #e5e5e5;
+      border-radius: 4px;
+      padding: 8px;
+      border: 1px solid #333;
+      resize: none;
+    }
+
+    .output-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .right-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 6px;
+      gap: 8px;
+    }
+
+    #jsonStatus {
+      font-size: 11px;
+    }
+
+    .preview-title {
+      font-size: 12px;
+      font-weight: 600;
+      margin-top: 6px;
+      margin-bottom: 2px;
+    }
+  </style>
+</head>
+<body>
+<header>
+  <h1>Конструктор тасок бота</h1>
+  <p>Собирает блоки с query + actions в общий JSON-массив, с предпросмотром и ручным редактированием.</p>
+</header>
+
+<div class="container">
+  <!-- ЛЕВАЯ ПАНЕЛЬ: НАСТРОЙКА ОДНОГО БЛОКА -->
+  <div class="panel panel-left">
+    <!-- ОБЩИЕ ПОЛЯ БЛОКА -->
+    <div class="field">
+      <label for="description">Description</label>
+      <input type="text" id="description" placeholder="Например: Открытие сессии приемки ДЗ №1" />
+    </div>
+
+    <div class="field">
+      <label for="scheduleDatetime">schedule_datetime</label>
+      <input type="datetime-local" id="scheduleDatetime" />
+      <div class="small-hint">
+        Здесь ты выбираешь <b>локальную дату и время</b> через календарь.
+        В JSON это сохранится как ISO-время с суффиксом <code>Z</code> (UTC), например:
+        <code>2025-11-13T13:35:00.000Z</code>.<br/>
+        Если твоему боту нужен формат <code>+03:00</code>, то в итоговом JSON (справа)
+        можно заменить <code>Z</code> на <code>+03:00</code> или переписать дату
+        в виде <code>2025-11-13T16:35:00.000+03:00</code>.
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="datetime">datetime (опционально)</label>
+      <input type="datetime-local" id="datetime" />
+      <div class="small-hint">
+        Работает так же, как <code>schedule_datetime</code>:
+        ты выбираешь дату и время, а в JSON попадёт ISO-строка вида
+        <code>2025-11-13T13:40:00.000Z</code>.<br/>
+        При необходимости можно вручную поправить на время с нужным смещением,
+        напр.: <code>2025-11-13T16:40:00.000+03:00</code>.
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Флаги</label>
+      <div class="checkbox-row">
+        <input type="checkbox" id="isActive" />
+        <label for="isActive" style="font-weight:400;">is_active: true</label>
+      </div>
+      <div class="small-hint">
+        Если галочка снята — поле <code>is_active</code> не добавляется.
+      </div>
+    </div>
+
+    <!-- QUERY BUILDER -->
+    <div class="field">
+      <div class="sub-block-title">Query (конструктор)</div>
+      <div class="section-box">
+        <div id="queryRows"></div>
+        <button type="button" class="secondary small-btn" id="addQueryRowBtn">+ Добавить условие</button>
+        <div class="small-hint" style="margin-top:6px;">
+          Примеры:
+          <ul style="margin:4px 0 0 16px;padding:0;font-size:11px;">
+            <li>поле: <code>state</code>, значение: <code>ACTIVE</code></li>
+            <li>поле: <code>_id.$in</code>, значение: <code>[912831921, 8513762658]</code></li>
+            <li>поле: <code>$or</code>, значение: <code>[{ "cache.homework1_file1": { "$exists": false } }]</code></li>
+          </ul>
+          Значение можно писать как JSON (<code>[...]</code>, <code>{"a":1}</code>, <code>true</code>, <code>123</code>)
+          или просто строку (<code>ACTIVE</code> без кавычек).
+        </div>
+        <div class="preview-title">Текущий query:</div>
+        <pre id="currentQueryPreview">{}</pre>
+      </div>
+    </div>
+
+    <!-- ACTIONS BUILDER -->
+    <div class="field">
+      <div class="sub-block-title">Actions (конструктор)</div>
+      <div class="section-box">
+        <div class="field">
+          <label for="actionType">Тип action</label>
+          <select id="actionType">
+            <!-- Заполняется из JS -->
+          </select>
+        </div>
+        <div id="actionFieldsContainer"></div>
+
+        <div class="inline-hint">
+          Для сложных случаев можно потом поправить JSON руками в правой панели.
+        </div>
+
+        <div class="buttons-row">
+          <button type="button" class="secondary" id="addActionBtn">Добавить action в массив</button>
+          <button type="button" class="secondary" id="clearActionsBtn">Очистить actions для этого блока</button>
+        </div>
+
+        <div class="preview-title">Текущий массив actions для блока:</div>
+        <pre id="currentActionsPreview">[]</pre>
+      </div>
+    </div>
+
+    <!-- EXTRA FIELDS -->
+    <div class="field">
+      <label for="extra">Дополнительные поля блока (JSON, опционально)</label>
+      <textarea id="extra" placeholder='Например:
+{
+  "work_interval": {
+    "from": "00:00",
+    "to": "23:59"
+  }
+}'></textarea>
+      <div class="small-hint">
+        Содержимое будет слито в корень объекта таски вместе с <code>description</code>, <code>query</code>, <code>actions</code>.
+        Используй для <code>work_interval</code>, <code>role</code>, <code>links</code> и т.п.
+      </div>
+    </div>
+
+    <!-- КНОПКИ БЛОКА -->
+    <div class="buttons-row">
+      <button class="primary" id="addBlockBtn">Добавить блок в итоговый JSON</button>
+      <button class="secondary" id="clearBlockFormBtn" type="button">Очистить форму блока</button>
+      <button class="danger" id="clearAllBlocksBtn" type="button">Очистить весь итоговый массив</button>
+    </div>
+  </div>
+
+  <!-- ПРАВАЯ ПАНЕЛЬ: ИТОГОВЫЙ JSON -->
+  <div class="panel panel-right">
+    <div class="output-header">
+      <span>Итоговый JSON по всем блокам</span>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <span class="tag" id="countTag">0 объектов</span>
+        <button class="primary" id="downloadBtn" disabled>Скачать JSON</button>
+      </div>
+    </div>
+
+    <textarea id="tasksJsonEditor">[]</textarea>
+
+    <div class="right-footer">
+      <div class="buttons-row">
+        <button class="secondary" id="applyJsonBtn">Применить правки из JSON</button>
+      </div>
+      <div id="jsonStatus" class="small-hint">OK</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // --- ГЛОБАЛЬНОЕ СОСТОЯНИЕ ---
+  const tasks = [];            // итоговый массив блоков
+  let currentActions = [];     // actions для текущего блока
+
+  // --- DOM элементы ---
+  const descriptionInput = document.getElementById("description");
+  const scheduleInput = document.getElementById("scheduleDatetime");
+  const datetimeInput = document.getElementById("datetime");
+  const isActiveInput = document.getElementById("isActive");
+  const extraInput = document.getElementById("extra");
+
+  const queryRowsContainer = document.getElementById("queryRows");
+  const addQueryRowBtn = document.getElementById("addQueryRowBtn");
+  const currentQueryPreview = document.getElementById("currentQueryPreview");
+
+  const actionTypeSelect = document.getElementById("actionType");
+  const actionFieldsContainer = document.getElementById("actionFieldsContainer");
+  const addActionBtn = document.getElementById("addActionBtn");
+  const clearActionsBtn = document.getElementById("clearActionsBtn");
+  const currentActionsPreview = document.getElementById("currentActionsPreview");
+
+  const addBlockBtn = document.getElementById("addBlockBtn");
+  const clearBlockFormBtn = document.getElementById("clearBlockFormBtn");
+  const clearAllBlocksBtn = document.getElementById("clearAllBlocksBtn");
+
+  const tasksJsonEditor = document.getElementById("tasksJsonEditor");
+  const applyJsonBtn = document.getElementById("applyJsonBtn");
+  const downloadBtn = document.getElementById("downloadBtn");
+  const countTag = document.getElementById("countTag");
+  const jsonStatus = document.getElementById("jsonStatus");
+
+  // --- УТИЛИТЫ JSON ---
+  function parseJsonOrAlert(text, fieldName, expectedType) {
+    if (!text.trim()) return null;
+    let obj;
+    try {
+      obj = JSON.parse(text);
+    } catch (e) {
+      alert("Ошибка парсинга " + fieldName + ":\n" + e.message);
+      throw e;
+    }
+
+    if (expectedType === "object" && (typeof obj !== "object" || Array.isArray(obj) || obj === null)) {
+      alert(fieldName + " должен быть JSON-объектом { ... }");
+      throw new Error(fieldName + " is not object");
+    }
+
+    if (expectedType === "array" && !Array.isArray(obj)) {
+      alert(fieldName + " должен быть JSON-массивом [ ... ]");
+      throw new Error(fieldName + " is not array");
+    }
+    return obj;
+  }
+
+  function parseAnyJsonOrAlert(text, fieldName) {
+    if (!text.trim()) return null;
+    try {
+      return JSON.parse(text);
+    } catch (e) {
+      alert("Ошибка парсинга " + fieldName + ":\n" + e.message);
+      throw e;
+    }
+  }
+
+  function smartParseValue(str) {
+    const trimmed = str.trim();
+    if (!trimmed) return "";
+    try {
+      return JSON.parse(trimmed);
+    } catch (e) {
+      return trimmed;
+    }
+  }
+
+  function setDeep(obj, path, value) {
+    const parts = path.split(".");
+    let current = obj;
+    for (let i = 0; i < parts.length; i++) {
+      const key = parts[i];
+      if (i === parts.length - 1) {
+        current[key] = value;
+      } else {
+        if (!current[key] || typeof current[key] !== "object" || Array.isArray(current[key])) {
+          current[key] = {};
+        }
+        current = current[key];
+      }
+    }
+  }
+
+  // --- ИТОГОВЫЙ JSON справа ---
+  function refreshTasksOutput() {
+    tasksJsonEditor.value = JSON.stringify(tasks, null, 2);
+    countTag.textContent = tasks.length + " объект" + (tasks.length === 1 ? "" : "ов");
+    downloadBtn.disabled = tasks.length === 0;
+    jsonStatus.textContent = "OK (сгенерировано конструктором)";
+    jsonStatus.style.color = "#2ecc71";
+  }
+
+  downloadBtn.addEventListener("click", () => {
+    const jsonStr = JSON.stringify(tasks, null, 2);
+    const blob = new Blob([jsonStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "schedule.json";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
+  tasksJsonEditor.addEventListener("input", () => {
+    jsonStatus.textContent = "Есть несохранённые правки (пока не применены)";
+    jsonStatus.style.color = "#e67e22";
+  });
+
+  applyJsonBtn.addEventListener("click", () => {
+    try {
+      const parsed = JSON.parse(tasksJsonEditor.value);
+      if (!Array.isArray(parsed)) {
+        alert("Корневой JSON должен быть массивом ( [ ... ] )");
+        jsonStatus.textContent = "Ошибка: корень не массив";
+        jsonStatus.style.color = "#e74c3c";
+        return;
+      }
+      tasks.length = 0;
+      parsed.forEach(obj => tasks.push(obj));
+      refreshTasksOutput();
+    } catch (e) {
+      alert("Ошибка парсинга итогового JSON:\n" + e.message);
+      jsonStatus.textContent = "Ошибка JSON";
+      jsonStatus.style.color = "#e74c3c";
+    }
+  });
+
+  // --- QUERY BUILDER ---
+  function createQueryRow(fieldValue = "", valueValue = "") {
+    const row = document.createElement("div");
+    row.className = "kv-row query-row";
+
+    const keyInput = document.createElement("input");
+    keyInput.type = "text";
+    keyInput.className = "kv-key";
+    keyInput.placeholder = "Поле, напр. state, _id.$in, $or";
+    keyInput.value = fieldValue;
+
+    const valueInput = document.createElement("input");
+    valueInput.type = "text";
+    valueInput.className = "kv-value";
+    valueInput.placeholder = 'Значение, напр. ACTIVE, [1,2], {"a":1}';
+    valueInput.value = valueValue;
+
+    const removeBtn = document.createElement("button");
+    removeBtn.type = "button";
+    removeBtn.className = "small-btn";
+    removeBtn.textContent = "✕";
+    removeBtn.title = "Удалить условие";
+    removeBtn.addEventListener("click", () => {
+      queryRowsContainer.removeChild(row);
+      if (!queryRowsContainer.querySelector(".query-row")) {
+        createQueryRow();
+      }
+      refreshQueryPreview();
+    });
+
+    keyInput.addEventListener("input", refreshQueryPreview);
+    valueInput.addEventListener("input", refreshQueryPreview);
+
+    row.appendChild(keyInput);
+    row.appendChild(valueInput);
+    row.appendChild(removeBtn);
+    queryRowsContainer.appendChild(row);
+  }
+
+  function buildQueryObjectFromUI() {
+    const rows = queryRowsContainer.querySelectorAll(".query-row");
+    const result = {};
+    let hasAny = false;
+
+    rows.forEach((row) => {
+      const keyInput = row.querySelector(".kv-key");
+      const valueInput = row.querySelector(".kv-value");
+      const key = keyInput.value.trim();
+      const valStr = valueInput.value.trim();
+      if (!key) return;
+      hasAny = true;
+      const parsedVal = valStr === "" ? "" : smartParseValue(valStr);
+      setDeep(result, key, parsedVal);
+    });
+
+    return hasAny ? result : null;
+  }
+
+  function refreshQueryPreview() {
+    const obj = buildQueryObjectFromUI();
+    const toShow = obj || {};
+    currentQueryPreview.textContent = JSON.stringify(toShow, null, 2);
+  }
+
+  addQueryRowBtn.addEventListener("click", () => {
+    createQueryRow();
+    refreshQueryPreview();
+  });
+
+  // --- ACTIONS DEFINITIONS ---
+  const ACTION_DEFS = {
+    sendMessage: {
+      label: "sendMessage — отправить сообщение",
+      fields: [
+        { name: "text", label: "text", type: "string", required: true, placeholder: "Текст сообщения" },
+        { name: "parse_mode", label: "parse_mode", type: "string", placeholder: "HTML / Markdown / ..." },
+        { name: "is_plain_text", label: "is_plain_text", type: "boolean" },
+        { name: "need_to_pin", label: "need_to_pin", type: "boolean" },
+        { name: "as_reply", label: "as_reply", type: "boolean" }
+      ]
+    },
+    setDelay: {
+      label: "setDelay — задержка / chat_action",
+      fields: [
+        { name: "delay", label: "delay (мс)", type: "number", placeholder: "Напр. 1000" },
+        { name: "chat_action", label: "chat_action", type: "string", placeholder: "typing / upload_document / ..." }
+      ]
+    },
+    doDialog: {
+      label: "doDialog — запуск диалога",
+      fields: [
+        { name: "dialog", label: "dialog", type: "string", required: true, placeholder: "homework1.OPEN_HOMEWORK1_SESSION" }
+      ]
+    },
+    sendDocument: {
+      label: "sendDocument — отправить документ",
+      fields: [
+        { name: "text", label: "text", type: "string", placeholder: "Текст рядом с файлом" },
+        { name: "document.file_id", label: "document.file_id", type: "string", required: true, placeholder: "{{context._.cache.homework2_file}}" }
+      ]
+    },
+    removeBotCommand: {
+      label: "removeBotCommand — убрать команду бота",
+      fields: [
+        { name: "command", label: "command", type: "string", required: true, placeholder: "send_homework" },
+        { name: "scope", label: "scope", type: "string", placeholder: "опционально" },
+        { name: "language_code", label: "language_code", type: "string", placeholder: "опционально" },
+        { name: "force", label: "force", type: "boolean" }
+      ]
+    },
+    insertBotCommand: {
+      label: "insertBotCommand — добавить одну команду",
+      fields: [
+        { name: "command", label: "command", type: "string", required: true, placeholder: "/start" },
+        { name: "position", label: "position", type: "number", placeholder: "0, 1, ..." },
+        { name: "scope", label: "scope", type: "string", placeholder: "опционально" },
+        { name: "language_code", label: "language_code", type: "string", placeholder: "опционально" },
+        { name: "force", label: "force", type: "boolean" }
+      ]
+    },
+    getUserById: {
+      label: "getUserById — получить пользователя по id",
+      fields: [
+        { name: "user_id", label: "user_id", type: "string", required: true, placeholder: "{{user.links.user2_0}}" }
+      ]
+    },
+    shufflePeers: {
+      label: "shufflePeers — перемешка пиров",
+      fields: [
+        { name: "query", label: "query (JSON)", type: "json", required: true, placeholder: '{"state":"ACTIVE","role":"student"}' },
+        { name: "count_links", label: "count_links", type: "number", required: true, placeholder: "1" },
+        { name: "link_name_prefix", label: "link_name_prefix", type: "string", required: true, placeholder: "reviewer_" },
+        { name: "backward_link_name_prefix", label: "backward_link_name_prefix", type: "string", required: true, placeholder: "user_" },
+        { name: "need_backward_links", label: "need_backward_links", type: "boolean" }
+      ]
+    }
+  };
+
+  function initActionTypeSelect() {
+    Object.keys(ACTION_DEFS).forEach(key => {
+      const opt = document.createElement("option");
+      opt.value = key;
+      opt.textContent = ACTION_DEFS[key].label;
+      actionTypeSelect.appendChild(opt);
+    });
+  }
+
+  function renderActionFields() {
+    actionFieldsContainer.innerHTML = "";
+    const type = actionTypeSelect.value;
+    const def = ACTION_DEFS[type];
+    if (!def) return;
+
+    def.fields.forEach(f => {
+      const wrapper = document.createElement("div");
+      wrapper.className = "field";
+      const label = document.createElement("label");
+      label.textContent = f.label;
+      const hint = document.createElement("div");
+      hint.className = "inline-hint";
+      hint.textContent = f.placeholder || "";
+
+      let input;
+      if (f.type === "string" || f.type === "number") {
+        input = document.createElement("input");
+        input.type = f.type === "number" ? "number" : "text";
+      } else if (f.type === "boolean") {
+        input = document.createElement("select");
+        const optEmpty = document.createElement("option");
+        optEmpty.value = "";
+        optEmpty.textContent = "не задавать";
+        const optTrue = document.createElement("option");
+        optTrue.value = "true";
+        optTrue.textContent = "true";
+        const optFalse = document.createElement("option");
+        optFalse.value = "false";
+        optFalse.textContent = "false";
+        input.appendChild(optEmpty);
+        input.appendChild(optTrue);
+        input.appendChild(optFalse);
+      } else if (f.type === "json") {
+        input = document.createElement("textarea");
+        input.rows = 3;
+      }
+
+      input.dataset.fieldName = f.name;
+      if (f.placeholder && f.type !== "boolean") input.placeholder = f.placeholder;
+
+      wrapper.appendChild(label);
+      wrapper.appendChild(input);
+      if (f.placeholder) wrapper.appendChild(hint);
+      actionFieldsContainer.appendChild(wrapper);
+    });
+  }
+
+  function buildActionFromForm() {
+    const type = actionTypeSelect.value;
+    const def = ACTION_DEFS[type];
+    if (!def) {
+      alert("Не выбран тип action");
+      return null;
+    }
+
+    const optionsObj = {};
+    for (const f of def.fields) {
+      const el = actionFieldsContainer.querySelector("[data-field-name='" + f.name + "']");
+      if (!el) continue;
+      let raw = (el.tagName === "TEXTAREA" ? el.value : el.value).trim();
+
+      if (!raw && f.required && f.type !== "boolean") {
+        alert("Поле \"" + f.label + "\" обязательно для " + type);
+        return null;
+      }
+
+      if (!raw && f.type !== "boolean") {
+        continue; // пустое необязательное
+      }
+
+      let value;
+      if (f.type === "string") {
+        value = raw;
+      } else if (f.type === "number") {
+        if (!raw) continue;
+        const num = Number(raw);
+        if (Number.isNaN(num)) {
+          alert("Поле \"" + f.label + "\" должно быть числом");
+          return null;
+        }
+        value = num;
+      } else if (f.type === "boolean") {
+        if (raw === "") {
+          continue; // не задаём поле
+        }
+        value = raw === "true";
+      } else if (f.type === "json") {
+        value = parseAnyJsonOrAlert(raw, "JSON в поле " + f.label);
+      }
+
+      setDeep(optionsObj, f.name, value);
+    }
+
+    const actionObj = { action: type };
+    if (Object.keys(optionsObj).length > 0) {
+      actionObj.options = optionsObj;
+    }
+    return actionObj;
+  }
+
+  function refreshCurrentActionsPreview() {
+    currentActionsPreview.textContent = JSON.stringify(currentActions, null, 2);
+  }
+
+  addActionBtn.addEventListener("click", () => {
+    const actionObj = buildActionFromForm();
+    if (!actionObj) return;
+    currentActions.push(actionObj);
+    refreshCurrentActionsPreview();
+
+    // очистить поля action'а
+    const type = actionTypeSelect.value;
+    const def = ACTION_DEFS[type];
+    def.fields.forEach(f => {
+      const el = actionFieldsContainer.querySelector("[data-field-name='" + f.name + "']");
+      if (!el) return;
+      if (f.type === "boolean") {
+        el.value = "";
+      } else {
+        el.value = "";
+      }
+    });
+  });
+
+  clearActionsBtn.addEventListener("click", () => {
+    if (!currentActions.length) return;
+    const ok = confirm("Очистить actions для текущего блока?");
+    if (!ok) return;
+    currentActions = [];
+    refreshCurrentActionsPreview();
+  });
+
+  actionTypeSelect.addEventListener("change", () => {
+    renderActionFields();
+  });
+
+  // --- РАБОТА С БЛОКОМ ---
+  function clearBlockForm() {
+    descriptionInput.value = "";
+    scheduleInput.value = "";
+    datetimeInput.value = "";
+    isActiveInput.checked = false;
+    extraInput.value = "";
+
+    // Query
+    queryRowsContainer.innerHTML = "";
+    createQueryRow();
+    refreshQueryPreview();
+
+    // Actions
+    currentActions = [];
+    refreshCurrentActionsPreview();
+    actionTypeSelect.selectedIndex = 0;
+    renderActionFields();
+  }
+
+  addBlockBtn.addEventListener("click", () => {
+    try {
+      const block = {};
+
+      const description = descriptionInput.value.trim();
+      if (description) block.description = description;
+
+      const scheduleValue = scheduleInput.value;
+      if (scheduleValue) {
+        const iso = new Date(scheduleValue).toISOString();
+        block.schedule_datetime = iso;
+      }
+
+      const datetimeValue = datetimeInput.value;
+      if (datetimeValue) {
+        const iso = new Date(datetimeValue).toISOString();
+        block.datetime = iso;
+      }
+
+      if (isActiveInput.checked) block.is_active = true;
+
+      const queryObj = buildQueryObjectFromUI();
+      if (queryObj) block.query = queryObj;
+
+      if (currentActions.length > 0) {
+        block.actions = JSON.parse(JSON.stringify(currentActions));
+      }
+
+      const extraJson = parseJsonOrAlert(extraInput.value, "Дополнительные поля блока", "object");
+      if (extraJson) Object.assign(block, extraJson);
+
+      if (!block.description && !block.query && !block.actions) {
+        const proceed = confirm("Похоже, блок пустой (нет description, query, actions). Всё равно добавить?");
+        if (!proceed) return;
+      }
+
+      tasks.push(block);
+      refreshTasksOutput();
+      clearBlockForm();
+    } catch (e) {
+      // Ошибки уже показаны alert'ами.
+    }
+  });
+
+  clearBlockFormBtn.addEventListener("click", () => {
+    const ok = confirm("Очистить форму текущего блока?");
+    if (!ok) return;
+    clearBlockForm();
+  });
+
+  clearAllBlocksBtn.addEventListener("click", () => {
+    if (!tasks.length) return;
+    const ok = confirm("Точно очистить ВСЕ блоки в итоговом JSON?");
+    if (!ok) return;
+    tasks.length = 0;
+    refreshTasksOutput();
+  });
+
+  // --- ИНИЦИАЛИЗАЦИЯ ---
+  function initActionTypeSelect() {
+    Object.keys(ACTION_DEFS).forEach(key => {
+      const opt = document.createElement("option");
+      opt.value = key;
+      opt.textContent = ACTION_DEFS[key].label;
+      actionTypeSelect.appendChild(opt);
+    });
+  }
+
+  initActionTypeSelect();
+  renderActionFields();
+  createQueryRow();
+  refreshQueryPreview();
+  refreshTasksOutput();
+</script>
+</body>
+</html>
