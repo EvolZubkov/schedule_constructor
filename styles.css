@@ -310,6 +310,8 @@ button:disabled {
   padding: 8px;
   background: radial-gradient(circle at top, rgba(15, 118, 110, 0.12), transparent 60%),
               rgba(15, 23, 42, 0.98);
+  overflow: auto; 
+  max-height: 550px;
 }
 
 .kv-row {
@@ -461,4 +463,72 @@ pre {
     flex: 0 0 auto;
     max-height: 420px;
   }
+}
+/* Скролл для предпросмотра query и actions */
+#currentActionsPreview,
+#currentQueryPreview {
+  max-height: 220px;   /* можно увеличить/уменьшить по вкусу */
+  overflow: auto;      /* появляется внутренняя прокрутка */
+}/* Единый стиль скролла под тёмный UI */
+
+/* Firefox */
+.panel-left,
+.section-box,
+pre,
+#tasksJsonEditor,
+#currentActionsPreview,
+#currentQueryPreview {
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent-strong) rgba(15, 23, 42, 0.98);
+}
+
+/* WebKit (Chrome / Edge / Safari) */
+.panel-left::-webkit-scrollbar,
+.section-box::-webkit-scrollbar,
+pre::-webkit-scrollbar,
+#tasksJsonEditor::-webkit-scrollbar,
+#currentActionsPreview::-webkit-scrollbar,
+#currentQueryPreview::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.panel-left::-webkit-scrollbar-track,
+.section-box::-webkit-scrollbar-track,
+pre::-webkit-scrollbar-track,
+#tasksJsonEditor::-webkit-scrollbar-track,
+#currentActionsPreview::-webkit-scrollbar-track,
+#currentQueryPreview::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.98);
+  border-radius: 999px;
+}
+
+.panel-left::-webkit-scrollbar-thumb,
+.section-box::-webkit-scrollbar-thumb,
+pre::-webkit-scrollbar-thumb,
+#tasksJsonEditor::-webkit-scrollbar-thumb,
+#currentActionsPreview::-webkit-scrollbar-thumb,
+#currentQueryPreview::-webkit-scrollbar-thumb {
+  background: var(--accent-strong);                 /* синий акцент */
+  border-radius: 999px;
+  border: 2px solid rgba(15, 23, 42, 0.98);         /* обводка под фон */
+}
+
+.panel-left::-webkit-scrollbar-thumb:hover,
+.section-box::-webkit-scrollbar-thumb:hover,
+pre::-webkit-scrollbar-thumb:hover,
+#tasksJsonEditor::-webkit-scrollbar-thumb:hover,
+#currentActionsPreview::-webkit-scrollbar-thumb:hover,
+#currentQueryPreview::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);                        /* ярче при hover */
+}
+/* Светлые иконки у datetime-поля (Chromium / Safari) */
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) brightness(1.3);   /* делаем иконку светлой */
+  opacity: 0.85;
+  cursor: pointer;
+}
+
+input[type="datetime-local"]:hover::-webkit-calendar-picker-indicator {
+  opacity: 1;
 }
