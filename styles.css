@@ -311,7 +311,7 @@ button:disabled {
   background: radial-gradient(circle at top, rgba(15, 118, 110, 0.12), transparent 60%),
               rgba(15, 23, 42, 0.98);
   overflow: auto; 
-  max-height: 550px;
+  max-height: 500px;
 }
 
 .kv-row {
@@ -467,7 +467,7 @@ pre {
 /* Скролл для предпросмотра query и actions */
 #currentActionsPreview,
 #currentQueryPreview {
-  max-height: 220px;   /* можно увеличить/уменьшить по вкусу */
+  max-height: 250px;   /* можно увеличить/уменьшить по вкусу */
   overflow: auto;      /* появляется внутренняя прокрутка */
 }/* Единый стиль скролла под тёмный UI */
 
